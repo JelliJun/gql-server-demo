@@ -1,7 +1,7 @@
 import { ApolloServer, gql } from 'apollo-server';
 import fetch from 'node-fetch';
 import { all, hash } from 'rsvp';
-import Auth from './auth';
+import Auth from './auth.js';
 
 const headers = {
   'X-Jelli-Authentication': Auth,
