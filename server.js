@@ -1,6 +1,6 @@
 import { ApolloServer, gql } from 'apollo-server';
 import fetch from 'node-fetch';
-import { all, hash } from 'rsvp';
+import { hash } from 'rsvp';
 import Auth from './auth.js';
 
 const headers = {
@@ -61,26 +61,26 @@ const resolvers = {
         });
       });
 
-      return hash(promises).then(async (response) => {
-        let results = {};
+      return hash(promises).then((response) => {
+        let resPromises = {};
         for (let key in response) {
-          results[key] = await response[key].json();
+          resPromises[key] = response[key].json();
         }
-        console.log(results);
-
-        return agencies.map((agency) => {
-          const advertiserIds = agency.advertisers;
-          const advertisers = [];
-          advertiserIds.forEach((identity) => {
-            const advertiser = results[identity];
-            console.log(advertiser);
-            if (advertiser) {
-              console.log()
-              advertisers.push(advertiser);
-            }
+        return hash(resPromises).then((results) => {
+          console.log(results);
+          return agencies.map((agency) => {
+            agency = Object.assign({}, agency);
+            const advertiserIds = agency.advertisers;
+            const advertisers = [];
+            advertiserIds.forEach((identity) => {
+              const advertiser = results[identity];
+              if (advertiser) {
+                advertisers.push(advertiser);
+              }
+            });
+            agency.advertisers = advertisers;
+            return agency;
           });
-          agency.advertisers = advertisers;
-          return agency;
         });
       });
       
